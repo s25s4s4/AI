@@ -708,10 +708,12 @@ class TradingMonitor {
     initKlinePanel() {
         const symbolSelect = document.getElementById('kline-symbol-select');
         const intervalSelect = document.getElementById('kline-interval-select');
-        const canvas = document.getElementById('positionKlineChart');
-        if (!symbolSelect || !intervalSelect || !canvas) {
+        const container = document.getElementById('positionKlineChart');
+        if (!symbolSelect || !intervalSelect || !container) {
+            console.log('K线面板初始化失败:', { symbolSelect: !!symbolSelect, intervalSelect: !!intervalSelect, container: !!container });
             return;
         }
+        console.log('K线面板初始化成功');
 
         if (!this.klineInterval) {
             this.klineInterval = intervalSelect.value || '5m';
