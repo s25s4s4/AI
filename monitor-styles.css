@@ -1,4 +1,4 @@
-ï»¿/* Global Styles */
+/* Global Styles */
 * {
     margin: 0;
     padding: 0;
@@ -17,7 +17,7 @@
     --accent-red: #ff0000;
     --accent-yellow: #ffff00;
     
-    /* æ¶¨è·Œé¢œè‰²æ¨¡å¼å˜é‡ - é»˜è®¤çº¢æ¶¨ç»¿è·Œ */
+    /* ÕÇµøÑÕÉ«Ä£Ê½±äÁ¿ - Ä¬ÈÏºìÕÇÂÌµø */
     --price-up: var(--accent-red);
     --price-down: var(--accent-green);
     --position-long: var(--accent-red);
@@ -26,7 +26,7 @@
     --loss-color: var(--accent-green);
 }
 
-/* åè½¬æ¶¨è·Œé¢œè‰²æ¨¡å¼ - çº¢è·Œç»¿æ¶¨ */
+/* ·´×ªÕÇµøÑÕÉ«Ä£Ê½ - ºìµøÂÌÕÇ */
 body.color-mode-reversed {
     --price-up: var(--accent-green);
     --price-down: var(--accent-red);
@@ -231,7 +231,7 @@ body {
     margin: 0 auto;
     padding: 2rem;
     display: grid;
-    /* ä¸‰åˆ—ï¼šå·¦ä¾§æ•´åˆ— AIï¼Œå³ä¾§ä¸¤åˆ—ç”¨äºèµ„äº§æ›²çº¿ + æ€»èµ„äº§ */
+    /* ÈıÁĞ£º×ó²àÕûÁĞ AI£¬ÓÒ²àÁ½ÁĞÓÃÓÚ×Ê²úÇúÏß + ×Ü×Ê²ú */
     grid-template-columns: 2.2fr 1.1fr 1.1fr;
     grid-template-rows: auto auto auto;
     gap: 2rem;
@@ -250,13 +250,13 @@ body {
     overflow: hidden;
 }
 
-/* èµ„äº§æ›²çº¿å›¾è¡¨åŒºåŸŸï¼šå³ä¸Šå·¦åŠéƒ¨åˆ† */
+/* ×Ê²úÇúÏßÍ¼±íÇøÓò£ºÓÒÉÏ×ó°ë²¿·Ö */
 .chart-section:first-child {
     grid-column: 2 / 3;
     grid-row: 1 / 2;
 }
 
-/* AI å†³ç­–åŒºåŸŸï¼šå·¦ä¾§æ•´åˆ—ï¼Œä»ä¸Šåˆ°ä¸‹ */
+/* AI ¾ö²ßÇøÓò£º×ó²àÕûÁĞ£¬´ÓÉÏµ½ÏÂ */
 .chart-section:nth-child(2) {
     grid-column: 1 / 2;
     grid-row: 1 / 4;
@@ -345,7 +345,7 @@ body {
 }
 
 .decision-container {
-    /* ä¸å†å›ºå®šé«˜åº¦ï¼Œè®© AI å†³ç­–å°½é‡ä¸Šä¸‹é€šå¼€ï¼Œç”±æ•´ä½“é¡µé¢æ»šåŠ¨ */
+    /* ²»ÔÙ¹Ì¶¨¸ß¶È£¬ÈÃ AI ¾ö²ß¾¡Á¿ÉÏÏÂÍ¨¿ª£¬ÓÉÕûÌåÒ³Ãæ¹ö¶¯ */
     min-height: 400px;
     max-height: none;
     overflow-y: visible;
@@ -372,7 +372,7 @@ body {
     max-width: 100%;
 }
 
-/* Markdown å†…å®¹æ ·å¼ */
+/* Markdown ÄÚÈİÑùÊ½ */
 .markdown-content {
     white-space: normal;
 }
@@ -522,13 +522,13 @@ body {
 
 /* Account Section */
 .account-section {
-    /* å³ä¸Šå³åŠéƒ¨åˆ†ï¼Œä¸èµ„äº§æ›²çº¿åŒä¸€è¡Œ */
+    /* ÓÒÉÏÓÒ°ë²¿·Ö£¬Óë×Ê²úÇúÏßÍ¬Ò»ĞĞ */
     grid-column: 3 / 4;
     grid-row: 1 / 2;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     padding: 1.5rem;
-    min-min-height: 540px;
+    min-height: 540px;
     display: flex;
     flex-direction: column;
     max-width: 100%;
@@ -811,7 +811,7 @@ body {
 
 /* Positions Section */
 .positions-section {
-    /* å³ä¾§ç¬¬äºŒè¡Œï¼Œå æ®å³ä¾§ä¸¤åˆ— */
+    /* ÓÒ²àµÚ¶şĞĞ£¬Õ¼¾İÓÒ²àÁ½ÁĞ */
     grid-column: 2 / 4;
     grid-row: 2 / 3;
     background-color: var(--bg-secondary);
@@ -934,7 +934,7 @@ body {
 
 /* Trades Section */
 .trades-section {
-    /* å³ä¾§ç¬¬ä¸‰è¡Œï¼Œå æ®å³ä¾§ä¸¤åˆ— */
+    /* ÓÒ²àµÚÈıĞĞ£¬Õ¼¾İÓÒ²àÁ½ÁĞ */
     grid-column: 2 / 4;
     grid-row: 3 / 4;
     background-color: var(--bg-secondary);
@@ -993,7 +993,7 @@ body {
     padding: 2rem;
 }
 
-/* äº¤æ˜“è¡¨æ ¼ç‰¹æ®Šæ ·å¼ */
+/* ½»Ò×±í¸ñÌØÊâÑùÊ½ */
 .trades-table .symbol {
     color: var(--accent-green);
     font-weight: bold;
@@ -1267,34 +1267,34 @@ body {
         grid-template-rows: auto auto auto auto auto;
     }
 
-    /* èµ„äº§æ›²çº¿ */
+    /* ×Ê²úÇúÏß */
     .chart-section:first-child {
         grid-column: 1 / 2;
         grid-row: 1 / 2;
         min-height: 400px;
     }
 
-    /* è´¦æˆ·ä¿¡æ¯ */
+    /* ÕË»§ĞÅÏ¢ */
     .account-section {
         grid-column: 1 / 2;
         grid-row: 2 / 3;
         min-height: auto;
     }
 
-    /* AI å†³ç­– */
+    /* AI ¾ö²ß */
     .chart-section:nth-child(2) {
         grid-column: 1 / 2;
         grid-row: 3 / 4;
         min-height: 400px;
     }
 
-    /* æŒä»“ */
+    /* ³Ö²Ö */
     .positions-section {
         grid-column: 1 / 2;
         grid-row: 4 / 5;
     }
 
-    /* äº¤æ˜“å†å² */
+    /* ½»Ò×ÀúÊ· */
     .trades-section {
         grid-column: 1 / 2;
         grid-row: 5 / 6;
@@ -1309,13 +1309,13 @@ body {
         overflow: hidden;
     }
 
-    /* ç§»åŠ¨ç«¯ç™»å½•æŒ‰é’® */
+    /* ÒÆ¶¯¶ËµÇÂ¼°´Å¥ */
     .btn-login {
         padding: 0.3rem 0.6rem;
         font-size: 0.7rem;
     }
 
-    /* ç§»åŠ¨ç«¯å¼¹çª— */
+    /* ÒÆ¶¯¶Ëµ¯´° */
     .modal-content {
         width: 95%;
         max-width: 350px;
@@ -1348,13 +1348,13 @@ body {
         font-size: 0.8rem;
     }
 
-    /* ç§»åŠ¨ç«¯å¹³ä»“æŒ‰é’® */
+    /* ÒÆ¶¯¶ËÆ½²Ö°´Å¥ */
     .btn-close-position {
         padding: 0.25rem 0.5rem;
         font-size: 0.7rem;
     }
 
-    /* ç§»åŠ¨ç«¯ Toast */
+    /* ÒÆ¶¯¶Ë Toast */
     .toast-container {
         top: 60px;
         right: 10px;
@@ -1405,7 +1405,7 @@ body {
         align-items: center;
     }
     
-    /* ç§»åŠ¨ç«¯å»é™¤ LIVE ä¸‹é¢çš„çº¿ */
+    /* ÒÆ¶¯¶ËÈ¥³ı LIVE ÏÂÃæµÄÏß */
     .nav-link.active::after {
         display: none;
     }
@@ -1416,7 +1416,7 @@ body {
         margin-right: 2px !important;
     }
 
-    /* ç§»åŠ¨ç«¯éšè— GitHub æ–‡å­—å’Œå›¾æ ‡ï¼Œåªä¿ç•™æ˜Ÿæ•° */
+    /* ÒÆ¶¯¶ËÒş²Ø GitHub ÎÄ×ÖºÍÍ¼±ê£¬Ö»±£ÁôĞÇÊı */
     .github-link > svg {
         display: none;
     }
@@ -1476,7 +1476,7 @@ body {
         overflow: hidden;
     }
     
-    /* èµ„äº§æ›²çº¿ä¿æŒä¸€å®šé«˜åº¦ */
+    /* ×Ê²úÇúÏß±£³ÖÒ»¶¨¸ß¶È */
     .chart-section:first-child {
         min-height: 350px;
     }
@@ -1522,7 +1522,7 @@ body {
         overflow-wrap: break-word;
     }
 
-    /* ç§»åŠ¨ç«¯ä¸»é¢˜åˆ‡æ¢æŒ‰é’® */
+    /* ÒÆ¶¯¶ËÖ÷ÌâÇĞ»»°´Å¥ */
     .theme-toggle-btn {
         font-size: 0.7rem;
         padding: 0.2rem 0.4rem;
@@ -1532,7 +1532,7 @@ body {
         font-size: 0.9rem;
     }
 
-    /* ç§»åŠ¨ç«¯ Markdown æ ·å¼ */
+    /* ÒÆ¶¯¶Ë Markdown ÑùÊ½ */
     .markdown-content h1 {
         font-size: 1.5rem;
     }
@@ -1663,7 +1663,7 @@ body {
         white-space: nowrap;
     }
 
-    /* ç§»åŠ¨ç«¯éšè—æŒä»“è¡¨æ ¼çš„ä¸€äº›åˆ— */
+    /* ÒÆ¶¯¶ËÒş²Ø³Ö²Ö±í¸ñµÄÒ»Ğ©ÁĞ */
     .positions-table th:nth-child(3),
     .positions-table td:nth-child(3),
     .positions-table th:nth-child(4),
@@ -1675,13 +1675,13 @@ body {
         display: none;
     }
 
-    /* ç§»åŠ¨ç«¯æ“ä½œåˆ—ä¿æŒæ˜¾ç¤º */
+    /* ÒÆ¶¯¶Ë²Ù×÷ÁĞ±£³ÖÏÔÊ¾ */
     .th-actions,
     .td-actions {
         display: table-cell;
     }
 
-    /* ç§»åŠ¨ç«¯éšè—äº¤æ˜“å†å²è¡¨æ ¼çš„ä¸€äº›åˆ— - éšè—ä»·æ ¼ï¼Œæ˜¾ç¤ºæ•°é‡ï¼ˆå¼€ä»“ä»·å€¼ï¼‰ */
+    /* ÒÆ¶¯¶ËÒş²Ø½»Ò×ÀúÊ·±í¸ñµÄÒ»Ğ©ÁĞ - Òş²Ø¼Û¸ñ£¬ÏÔÊ¾ÊıÁ¿£¨¿ª²Ö¼ÛÖµ£© */
     .trades-table th:nth-child(5),
     .trades-table td:nth-child(5),
     .trades-table th:nth-child(7),
@@ -1771,7 +1771,7 @@ body {
         min-height: auto;
     }
     
-    /* èµ„äº§æ›²çº¿ä¿æŒä¸€å®šé«˜åº¦ */
+    /* ×Ê²úÇúÏß±£³ÖÒ»¶¨¸ß¶È */
     .chart-section:first-child {
         min-height: 300px;
     }
@@ -1835,7 +1835,7 @@ body {
         padding-bottom: 0.4rem;
     }
 
-    /* ç§»åŠ¨ç«¯ä¸»é¢˜åˆ‡æ¢æŒ‰é’® */
+    /* ÒÆ¶¯¶ËÖ÷ÌâÇĞ»»°´Å¥ */
     .theme-toggle-btn {
         font-size: 0.65rem;
         padding: 0.15rem 0.3rem;
@@ -1852,7 +1852,7 @@ body {
         font-size: 0.85rem;
     }
 
-    /* ç»§æ‰¿768pxçš„åˆ—éšè—è§„åˆ™ */
+    /* ¼Ì³Ğ768pxµÄÁĞÒş²Ø¹æÔò */
     .positions-table th:nth-child(3),
     .positions-table td:nth-child(3),
     .positions-table th:nth-child(4),
@@ -1864,19 +1864,19 @@ body {
         display: none;
     }
 
-    /* ç§»åŠ¨ç«¯æ“ä½œåˆ—ä¿æŒæ˜¾ç¤º */
+    /* ÒÆ¶¯¶Ë²Ù×÷ÁĞ±£³ÖÏÔÊ¾ */
     .th-actions,
     .td-actions {
         display: table-cell;
     }
 
-    /* ç§»åŠ¨ç«¯ç™»å½•æŒ‰é’® */
+    /* ÒÆ¶¯¶ËµÇÂ¼°´Å¥ */
     .btn-login {
         padding: 0.35rem 0.7rem;
         font-size: 0.7rem;
     }
 
-    /* ç§»åŠ¨ç«¯å¹³ä»“æŒ‰é’® */
+    /* ÒÆ¶¯¶ËÆ½²Ö°´Å¥ */
     .btn-close-position {
         padding: 0.2rem 0.4rem;
         font-size: 0.65rem;
@@ -2338,13 +2338,13 @@ body {
 }
 
 
-/* Kï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ğ»ï¿½ï¿½ï¿½Å¥ï¿½ï¿½Ê½ */
+/* K??????§İ??????? */
 .positions-kline-indicators {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-top: 0.5rem;
-    flex-wrap: wrap; /* å…è®¸æ¢è¡Œ */
+    flex-wrap: wrap; /* ÔÊĞí»»ĞĞ */
 }
 
 .kline-indicator-label {
@@ -2361,8 +2361,8 @@ body {
     color: var(--text-dim);
     cursor: pointer;
     transition: all 0.2s ease;
-    white-space: nowrap; /* é˜²æ­¢æ–‡å­—æ¢è¡Œ */
-    flex-shrink: 0; /* é˜²æ­¢æŒ‰é’®è¢«å‹ç¼© */
+    white-space: nowrap; /* ·ÀÖ¹ÎÄ×Ö»»ĞĞ */
+    flex-shrink: 0; /* ·ÀÖ¹°´Å¥±»Ñ¹Ëõ */
 }
 
 .kline-indicator-btn:hover {
@@ -2376,7 +2376,7 @@ body {
     color: #fff;
 }
 
-/* æ‰‹æœºç«¯å“åº”å¼ä¼˜åŒ– */
+/* ÊÖ»ú¶ËÏìÓ¦Ê½ÓÅ»¯ */
 @media (max-width: 768px) {
     .positions-kline-controls {
         flex-direction: column;
