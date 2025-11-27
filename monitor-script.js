@@ -31,8 +31,15 @@ class TradingMonitor {
         this.accountData = null;
         this.equityChart = null;
         this.klineChart = null;
+        this.klineCandlestickSeries = null;
+        this.klineVolumeSeries = null;
+        this.klineEma20Series = null;
+        this.klineEma50Series = null;
+        this.klineIndicatorChart = null;
+        this.klineIndicatorSeries = null;
         this.klineSymbol = null;
-        this.klineInterval = '5m';
+        this.klineInterval = '1m';
+        this.klineActiveIndicator = 'rsi7';
         this.chartTimeframe = '24'; // 固定24小时
         this.password = null; // 存储验证后的密码
         this.isLoggedIn = false; // 登录状态
@@ -716,8 +723,19 @@ class TradingMonitor {
         console.log('K线面板初始化成功');
 
         if (!this.klineInterval) {
-            this.klineInterval = intervalSelect.value || '5m';
+            this.klineInterval = intervalSelect.value || '1m';
         }
+
+        // 初始化指标切换按钮
+        const indicatorBtns = document.querySelectorAll('.kline-indicator-btn');
+        indicatorBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                indicatorBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.klineActiveIndicator = btn.dataset.indicator;
+                this.updateKlineIndicator();
+            });
+        });
 
         symbolSelect.addEventListener('change', async () => {
             this.klineSymbol = symbolSelect.value || null;
@@ -785,10 +803,24 @@ class TradingMonitor {
 
         container.innerHTML = '';
 
+        // 创建主图容器和副图容器
+        const mainChartDiv = document.createElement('div');
+        mainChartDiv.id = 'kline-main-chart';
+        mainChartDiv.style.width = '100%';
+        mainChartDiv.style.height = '320px';
+        container.appendChild(mainChartDiv);
+
+        const indicatorChartDiv = document.createElement('div');
+        indicatorChartDiv.id = 'kline-indicator-chart';
+        indicatorChartDiv.style.width = '100%';
+        indicatorChartDiv.style.height = '120px';
+        indicatorChartDiv.style.marginTop = '10px';
+        container.appendChild(indicatorChartDiv);
+
         if (!this.klineChart) {
-            this.klineChart = LightweightCharts.createChart(container, {
-                width: container.clientWidth,
-                height: 260,
+            this.klineChart = LightweightCharts.createChart(mainChartDiv, {
+                width: mainChartDiv.clientWidth,
+                height: 320,
                 layout: {
                     background: { color: '#0a0e1a' },
                     textColor: '#9ca3af',
@@ -831,9 +863,41 @@ class TradingMonitor {
                 },
             });
 
+            // 创建指标副图
+            this.klineIndicatorChart = LightweightCharts.createChart(indicatorChartDiv, {
+                width: indicatorChartDiv.clientWidth,
+                height: 120,
+                layout: {
+                    background: { color: '#0a0e1a' },
+                    textColor: '#9ca3af',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                    horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                },
+                rightPriceScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                },
+                timeScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    visible: false,
+                },
+            });
+
+            // 同步时间轴
+            this.klineChart.timeScale().subscribeVisibleTimeRangeChange(() => {
+                const range = this.klineChart.timeScale().getVisibleRange();
+                if (range && this.klineIndicatorChart) {
+                    this.klineIndicatorChart.timeScale().setVisibleRange(range);
+                }
+            });
+
             window.addEventListener('resize', () => {
-                if (this.klineChart && container) {
-                    this.klineChart.applyOptions({ width: container.clientWidth });
+                if (this.klineChart && mainChartDiv) {
+                    this.klineChart.applyOptions({ width: mainChartDiv.clientWidth });
+                }
+                if (this.klineIndicatorChart && indicatorChartDiv) {
+                    this.klineIndicatorChart.applyOptions({ width: indicatorChartDiv.clientWidth });
                 }
             });
         }
@@ -886,6 +950,82 @@ class TradingMonitor {
         }
 
         this.klineChart.timeScale().fitContent();
+        
+        // 存储数据供指标使用
+        this.currentKlineData = data;
+        this.updateKlineIndicator();
+    }
+
+    updateKlineIndicator() {
+        if (!this.currentKlineData || !this.klineIndicatorChart) {
+            return;
+        }
+
+        const data = this.currentKlineData;
+        const indicator = this.klineActiveIndicator;
+
+        // 清除旧的指标
+        if (this.klineIndicatorSeries) {
+            this.klineIndicatorChart.removeSeries(this.klineIndicatorSeries);
+            this.klineIndicatorSeries = null;
+        }
+
+        // 根据选择的指标绘制
+        if (indicator === 'rsi7' && data.indicators?.rsi7) {
+            this.klineIndicatorSeries = this.klineIndicatorChart.addLineSeries({
+                color: '#f59e0b',
+                lineWidth: 2,
+                title: 'RSI(7)',
+            });
+            const rsiData = data.indicators.rsi7.map((value, index) => ({
+                time: Math.floor(data.candles[index].timestamp / 1000),
+                value: value,
+            }));
+            this.klineIndicatorSeries.setData(rsiData);
+            
+            // 添加超买超卖线
+            this.klineIndicatorChart.applyOptions({
+                rightPriceScale: {
+                    scaleMargins: { top: 0.1, bottom: 0.1 },
+                },
+            });
+        } else if (indicator === 'rsi14' && data.indicators?.rsi14) {
+            this.klineIndicatorSeries = this.klineIndicatorChart.addLineSeries({
+                color: '#ef4444',
+                lineWidth: 2,
+                title: 'RSI(14)',
+            });
+            const rsiData = data.indicators.rsi14.map((value, index) => ({
+                time: Math.floor(data.candles[index].timestamp / 1000),
+                value: value,
+            }));
+            this.klineIndicatorSeries.setData(rsiData);
+        } else if (indicator === 'macd' && data.indicators?.macd) {
+            // MACD柱状图
+            this.klineIndicatorSeries = this.klineIndicatorChart.addHistogramSeries({
+                color: '#3b82f6',
+                title: 'MACD',
+            });
+            const macdData = data.indicators.macd.map((value, index) => ({
+                time: Math.floor(data.candles[index].timestamp / 1000),
+                value: value,
+                color: value >= 0 ? '#ef4444' : '#22c55e',
+            }));
+            this.klineIndicatorSeries.setData(macdData);
+        } else if (indicator === 'atr' && data.indicators?.atr) {
+            this.klineIndicatorSeries = this.klineIndicatorChart.addLineSeries({
+                color: '#8b5cf6',
+                lineWidth: 2,
+                title: 'ATR',
+            });
+            const atrData = data.indicators.atr.map((value, index) => ({
+                time: Math.floor(data.candles[index].timestamp / 1000),
+                value: value,
+            }));
+            this.klineIndicatorSeries.setData(atrData);
+        }
+
+        this.klineIndicatorChart.timeScale().fitContent();
     }
 
     // 初始化时间范围选择器（已禁用切换功能）

@@ -2337,3 +2337,38 @@ body {
     background: var(--accent-green);
 }
 
+
+/* K线指标切换按钮样式 */
+.positions-kline-indicators {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.kline-indicator-label {
+    color: var(--text-dim);
+    font-size: 0.875rem;
+}
+
+.kline-indicator-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.kline-indicator-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-color);
+}
+
+.kline-indicator-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+}

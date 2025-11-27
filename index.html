@@ -268,9 +268,9 @@
                         <label class="kline-label">
                             周期
                             <select id="kline-interval-select" class="kline-select">
-                                <option value="1m">1分钟</option>
+                                <option value="1m" selected>1分钟</option>
                                 <option value="3m">3分钟</option>
-                                <option value="5m" selected>5分钟</option>
+                                <option value="5m">5分钟</option>
                                 <option value="10m">10分钟</option>
                                 <option value="15m">15分钟</option>
                                 <option value="30m">30分钟</option>
@@ -279,6 +279,13 @@
                                 <option value="1d">1天</option>
                             </select>
                         </label>
+                    </div>
+                    <div class="positions-kline-indicators">
+                        <span class="kline-indicator-label">指标:</span>
+                        <button class="kline-indicator-btn active" data-indicator="rsi7">RSI(7)</button>
+                        <button class="kline-indicator-btn" data-indicator="rsi14">RSI(14)</button>
+                        <button class="kline-indicator-btn" data-indicator="macd">MACD</button>
+                        <button class="kline-indicator-btn" data-indicator="atr">ATR</button>
                     </div>
                 </div>
                 <div class="positions-kline-chart-container" id="positionKlineChart"></div>
