@@ -8,7 +8,7 @@ class KlineCache {
         this.storeName = 'candles';
         this.db = null;
         this.maxCacheAge = 60000; // 1分钟缓存过期时间
-        this.maxCandles = 200; // 最多保留200根K线
+        this.maxCandles = 500; // 最多保留500根K线（约1个月的4小时K线）
     }
 
     /**
@@ -187,6 +187,104 @@ class KlineCache {
         }
     }
 
+    /**
+     * 导出K线数据到JSON文件
+     */
+    async exportToFile(symbol, interval) {
+        const data = await this.get(symbol, interval);
+        if (!data) {
+            console.warn('没有可导出的数据');
+            return null;
+        }
+        
+        const filename = `kline_${symbol}_${interval}_${new Date().toISOString().split('T')[0]}.json`;
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        console.log(`📥 已导出K线数据: ${filename}`);
+        return filename;
+    }
+    
+    /**
+     * 从JSON文件导入K线数据
+     */
+    async importFromFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (!data.symbol || !data.interval || !data.candles) {
+                        throw new Error('无效的K线数据文件');
+                    }
+                    
+                    // 保存到缓存
+                    await this.save(data.symbol, data.interval, data);
+                    console.log(`📤 已导入K线数据: ${data.symbol}_${data.interval} (${data.candles.length}根)`);
+                    resolve(data);
+                } catch (error) {
+                    console.error('导入K线数据失败:', error);
+                    reject(error);
+                }
+            };
+            
+            reader.onerror = () => reject(reader.error);
+            reader.readAsText(file);
+        });
+    }
+    
+    /**
+     * 导出所有缓存数据
+     */
+    async exportAllToFile() {
+        if (!this.db) return;
+        
+        try {
+            const tx = this.db.transaction([this.storeName], 'readonly');
+            const store = tx.objectStore(this.storeName);
+            const request = store.getAll();
+            
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => {
+                    const allData = request.result;
+                    
+                    if (allData.length === 0) {
+                        console.warn('没有可导出的数据');
+                        resolve(null);
+                        return;
+                    }
+                    
+                    const filename = `kline_all_${new Date().toISOString().split('T')[0]}.json`;
+                    const json = JSON.stringify(allData, null, 2);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    
+                    URL.revokeObjectURL(url);
+                    console.log(`📥 已导出所有K线数据: ${filename} (${allData.length}个币种)`);
+                    resolve(filename);
+                };
+                
+                request.onerror = () => reject(request.error);
+            });
+        } catch (error) {
+            console.error('导出所有数据失败:', error);
+        }
+    }
+    
     /**
      * 删除特定缓存
      */

@@ -286,6 +286,11 @@
                         <button class="kline-indicator-btn" data-indicator="rsi14">RSI(14)</button>
                         <button class="kline-indicator-btn" data-indicator="macd">MACD</button>
                         <button class="kline-indicator-btn" data-indicator="atr">ATR</button>
+                        <span style="margin-left: auto; display: flex; gap: 0.5rem;">
+                            <button class="kline-export-btn" id="kline-export-btn" title="导出当前K线数据">📥 导出</button>
+                            <button class="kline-import-btn" id="kline-import-btn" title="导入K线数据">📤 导入</button>
+                            <input type="file" id="kline-import-file" accept=".json" style="display: none;">
+                        </span>
                     </div>
                 </div>
                 <div class="positions-kline-chart-container" id="positionKlineChart"></div>

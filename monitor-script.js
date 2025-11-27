@@ -799,6 +799,58 @@ class TradingMonitor {
                 this.updateKlineIndicator();
             });
         });
+        
+        // 初始化导出/导入按钮
+        const exportBtn = document.getElementById('kline-export-btn');
+        const importBtn = document.getElementById('kline-import-btn');
+        const importFile = document.getElementById('kline-import-file');
+        
+        if (exportBtn) {
+            exportBtn.addEventListener('click', async () => {
+                if (!this.klineSymbol || !this.klineInterval) {
+                    this.showToast('导出失败', '请先选择要导出的币种和周期', 'warning');
+                    return;
+                }
+                
+                if (window.klineCache) {
+                    const filename = await window.klineCache.exportToFile(this.klineSymbol, this.klineInterval);
+                    if (filename) {
+                        this.showToast('导出成功', `已保存为: ${filename}`, 'success');
+                    } else {
+                        this.showToast('导出失败', '暂无可导出的数据', 'error');
+                    }
+                }
+            });
+        }
+        
+        if (importBtn && importFile) {
+            importBtn.addEventListener('click', () => {
+                importFile.click();
+            });
+            
+            importFile.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                if (window.klineCache) {
+                    try {
+                        const data = await window.klineCache.importFromFile(file);
+                        this.showToast('导入成功', `已导入 ${data.symbol}_${data.interval} (${data.candles.length}根K线)`, 'success');
+                        
+                        // 如果导入的是当前显示的币种，刷新图表
+                        if (data.symbol === this.klineSymbol && data.interval === this.klineInterval) {
+                            this.currentKlineData = data;
+                            await this.updateKlineChart();
+                        }
+                    } catch (error) {
+                        this.showToast('导入失败', error.message, 'error');
+                    }
+                }
+                
+                // 清空文件选择
+                importFile.value = '';
+            });
+        }
 
         symbolSelect.addEventListener('change', async () => {
             this.klineSymbol = symbolSelect.value || null;

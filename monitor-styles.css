@@ -2411,3 +2411,24 @@ body {
         min-height: 450px;
     }
 }
+
+/* K线导出/导入按钮 */
+.kline-export-btn,
+.kline-import-btn {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+    background: rgba(0, 255, 170, 0.1);
+    border: 1px solid rgba(0, 255, 170, 0.3);
+    border-radius: 4px;
+    color: var(--accent-green);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.kline-export-btn:hover,
+.kline-import-btn:hover {
+    background: rgba(0, 255, 170, 0.2);
+    border-color: var(--accent-green);
+    box-shadow: 0 0 8px rgba(0, 255, 170, 0.3);
+}
