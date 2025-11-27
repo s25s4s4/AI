@@ -47,6 +47,15 @@ class TradingMonitor {
     }
 
     async init() {
+        // 初始化K线缓存
+        if (window.klineCache) {
+            try {
+                await window.klineCache.init();
+            } catch (error) {
+                console.warn('K线缓存初始化失败，将直接使用API', error);
+            }
+        }
+        
         await this.loadInitialData();
         this.initEquityChart();
         this.initKlinePanel();
@@ -687,6 +696,37 @@ class TradingMonitor {
         if (!symbol) {
             return null;
         }
+        
+        const cache = window.klineCache;
+        
+        // 1. 先尝试从缓存读取
+        if (cache && cache.db) {
+            try {
+                const cached = await cache.get(symbol, interval);
+                
+                // 如果缓存有效（不到1分钟），直接返回
+                if (cached && !cache.needsUpdate(cached)) {
+                    console.log(`⚡ 使用K线缓存: ${symbol} ${interval}`);
+                    return cached;
+                }
+                
+                // 如果缓存过期，先显示缓存，然后后台更新
+                if (cached) {
+                    console.log(`🔄 缓存已过期，后台更新: ${symbol} ${interval}`);
+                    // 异步更新，不等待
+                    this.updateKlineInBackground(symbol, interval, cached);
+                    return cached; // 先返回旧数据
+                }
+            } catch (error) {
+                console.warn('读取K线缓存失败:', error);
+            }
+        }
+        
+        // 2. 缓存不可用或无缓存，从API获取
+        return this.fetchKlineFromAPI(symbol, interval);
+    }
+    
+    async fetchKlineFromAPI(symbol, interval) {
         try {
             const params = new URLSearchParams();
             params.set('symbol', symbol);
@@ -695,6 +735,7 @@ class TradingMonitor {
             }
             const response = await fetch(`${API_BASE}/api/kline?${params.toString()}`, { credentials: 'include' });
             const data = await response.json();
+            
             if (data.error) {
                 console.error('K线API错误:', data.error);
                 if (this.showToast) {
@@ -702,6 +743,12 @@ class TradingMonitor {
                 }
                 return null;
             }
+            
+            // 保存到缓存
+            if (window.klineCache && window.klineCache.db) {
+                await window.klineCache.save(symbol, interval, data);
+            }
+            
             return data;
         } catch (error) {
             console.error('加载K线数据失败:', error);
@@ -709,6 +756,22 @@ class TradingMonitor {
                 this.showToast('K线加载失败', '网络错误或服务器异常', 'error');
             }
             return null;
+        }
+    }
+    
+    async updateKlineInBackground(symbol, interval, cachedData) {
+        try {
+            const newData = await this.fetchKlineFromAPI(symbol, interval);
+            if (newData && newData.candles && newData.candles.length > 0) {
+                // 如果当前还在显示这个K线，刷新它
+                if (this.klineSymbol === symbol && this.klineInterval === interval) {
+                    console.log('🔄 后台更新完成，刷新K线图');
+                    this.currentKlineData = newData;
+                    this.updateKlineChart();
+                }
+            }
+        } catch (error) {
+            console.warn('后台更新K线失败:', error);
         }
     }
 
@@ -857,17 +920,18 @@ class TradingMonitor {
                 wickUpColor: '#ef4444',
             });
 
-            this.klineVolumeSeries = this.klineChart.addHistogramSeries({
-                color: '#26a69a',
-                priceFormat: {
-                    type: 'volume',
-                },
-                priceScaleId: 'volume',
-                scaleMargins: {
-                    top: 0.8,
-                    bottom: 0,
-                },
-            });
+            // 成交量柱状图已禁用
+            // this.klineVolumeSeries = this.klineChart.addHistogramSeries({
+            //     color: '#26a69a',
+            //     priceFormat: {
+            //         type: 'volume',
+            //     },
+            //     priceScaleId: 'volume',
+            //     scaleMargins: {
+            //         top: 0.8,
+            //         bottom: 0,
+            //     },
+            // });
 
             // 创建指标副图
             this.klineIndicatorChart = LightweightCharts.createChart(indicatorChartDiv, {
@@ -918,14 +982,15 @@ class TradingMonitor {
             close: parseFloat(c.close),
         }));
 
-        const volumeData = data.candles.map(c => ({
-            time: Math.floor(c.timestamp / 1000) + tzOffset,
-            value: parseFloat(c.volume),
-            color: c.close >= c.open ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)',
-        }));
+        // 成交量数据已禁用
+        // const volumeData = data.candles.map(c => ({
+        //     time: Math.floor(c.timestamp / 1000) + tzOffset,
+        //     value: parseFloat(c.volume),
+        //     color: c.close >= c.open ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)',
+        // }));
 
         this.klineCandlestickSeries.setData(candleData);
-        this.klineVolumeSeries.setData(volumeData);
+        // this.klineVolumeSeries.setData(volumeData);
 
         if (data.indicators && data.indicators.ema20 && data.indicators.ema20.length > 0) {
             if (!this.klineEma20Series) {
