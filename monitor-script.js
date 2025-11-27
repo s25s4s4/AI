@@ -30,6 +30,9 @@ class TradingMonitor {
         this.cryptoPrices = new Map();
         this.accountData = null;
         this.equityChart = null;
+        this.klineChart = null;
+        this.klineSymbol = null;
+        this.klineInterval = '5m';
         this.chartTimeframe = '24'; // 固定24小时
         this.password = null; // 存储验证后的密码
         this.isLoggedIn = false; // 登录状态
@@ -39,6 +42,7 @@ class TradingMonitor {
     async init() {
         await this.loadInitialData();
         this.initEquityChart();
+        this.initKlinePanel();
         this.initTimeframeSelector();
         this.startDataUpdates();
         this.initTabs();
@@ -263,6 +267,8 @@ class TradingMonitor {
                     `;
                 }).join('');
             }
+
+            this.updateKlineSymbols(data.positions);
             
         } catch (error) {
             console.error('加载持仓数据失败:', error);
@@ -464,6 +470,12 @@ class TradingMonitor {
         setInterval(async () => {
             await this.updateEquityChart();
         }, 30000);
+
+        setInterval(async () => {
+            if (this.klineSymbol) {
+                await this.updateKlineChart();
+            }
+        }, 60000);
     }
 
     // 复制ticker内容实现无缝滚动
@@ -662,6 +674,216 @@ class TradingMonitor {
         this.equityChart.data.datasets[0].pointRadius = 0;
         
         this.equityChart.update('none'); // 无动画更新
+    }
+
+    async loadKlineData(symbol, interval) {
+        if (!symbol) {
+            return null;
+        }
+        try {
+            const params = new URLSearchParams();
+            params.set('symbol', symbol);
+            if (interval) {
+                params.set('interval', interval);
+            }
+            const response = await fetch(`${API_BASE}/api/kline?${params.toString()}`, { credentials: 'include' });
+            const data = await response.json();
+            if (data.error) {
+                console.error('K线API错误:', data.error);
+                if (this.showToast) {
+                    this.showToast('K线加载失败', data.error, 'error');
+                }
+                return null;
+            }
+            return data;
+        } catch (error) {
+            console.error('加载K线数据失败:', error);
+            if (this.showToast) {
+                this.showToast('K线加载失败', '网络错误或服务器异常', 'error');
+            }
+            return null;
+        }
+    }
+
+    initKlinePanel() {
+        const symbolSelect = document.getElementById('kline-symbol-select');
+        const intervalSelect = document.getElementById('kline-interval-select');
+        const canvas = document.getElementById('positionKlineChart');
+        if (!symbolSelect || !intervalSelect || !canvas) {
+            return;
+        }
+
+        if (!this.klineInterval) {
+            this.klineInterval = intervalSelect.value || '5m';
+        }
+
+        symbolSelect.addEventListener('change', async () => {
+            this.klineSymbol = symbolSelect.value || null;
+            await this.updateKlineChart();
+        });
+
+        intervalSelect.addEventListener('change', async () => {
+            this.klineInterval = intervalSelect.value || '5m';
+            await this.updateKlineChart();
+        });
+    }
+
+    updateKlineSymbols(positions) {
+        const symbolSelect = document.getElementById('kline-symbol-select');
+        if (!symbolSelect) {
+            return;
+        }
+
+        if (!positions || positions.length === 0) {
+            symbolSelect.innerHTML = '<option value="">暂无持仓</option>';
+            this.klineSymbol = null;
+            if (this.klineChart) {
+                const container = document.getElementById('positionKlineChart');
+                if (container) {
+                    container.innerHTML = '<div style="color: var(--text-dim); text-align: center; padding: 2rem;">暂无持仓</div>';
+                }
+            }
+            return;
+        }
+
+        const uniqueSymbols = Array.from(new Set(positions.map(pos => pos.symbol)));
+        const previous = this.klineSymbol || symbolSelect.value;
+
+        symbolSelect.innerHTML = uniqueSymbols.map(symbol => `<option value="${symbol}">${symbol}</option>`).join('');
+
+        let needsUpdate = false;
+        if (previous && uniqueSymbols.includes(previous)) {
+            symbolSelect.value = previous;
+            this.klineSymbol = previous;
+        } else {
+            symbolSelect.value = uniqueSymbols[0];
+            this.klineSymbol = uniqueSymbols[0];
+            needsUpdate = true;
+        }
+
+        if (needsUpdate || !this.klineChart) {
+            this.updateKlineChart();
+        }
+    }
+
+    async updateKlineChart() {
+        const container = document.getElementById('positionKlineChart');
+        if (!container || !this.klineSymbol) {
+            return;
+        }
+
+        const interval = this.klineInterval || '5m';
+        const data = await this.loadKlineData(this.klineSymbol, interval);
+
+        if (!data || !data.candles || data.candles.length === 0) {
+            container.innerHTML = '<div style="color: var(--text-dim); text-align: center; padding: 2rem;">暂无K线数据</div>';
+            this.klineChart = null;
+            return;
+        }
+
+        container.innerHTML = '';
+
+        if (!this.klineChart) {
+            this.klineChart = LightweightCharts.createChart(container, {
+                width: container.clientWidth,
+                height: 260,
+                layout: {
+                    background: { color: '#0a0e1a' },
+                    textColor: '#9ca3af',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                    horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal,
+                },
+                rightPriceScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                },
+                timeScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+            });
+
+            this.klineCandlestickSeries = this.klineChart.addCandlestickSeries({
+                upColor: '#ef4444',
+                downColor: '#22c55e',
+                borderDownColor: '#22c55e',
+                borderUpColor: '#ef4444',
+                wickDownColor: '#22c55e',
+                wickUpColor: '#ef4444',
+            });
+
+            this.klineVolumeSeries = this.klineChart.addHistogramSeries({
+                color: '#26a69a',
+                priceFormat: {
+                    type: 'volume',
+                },
+                priceScaleId: 'volume',
+                scaleMargins: {
+                    top: 0.8,
+                    bottom: 0,
+                },
+            });
+
+            window.addEventListener('resize', () => {
+                if (this.klineChart && container) {
+                    this.klineChart.applyOptions({ width: container.clientWidth });
+                }
+            });
+        }
+
+        const candleData = data.candles.map(c => ({
+            time: Math.floor(c.timestamp / 1000),
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+        }));
+
+        const volumeData = data.candles.map(c => ({
+            time: Math.floor(c.timestamp / 1000),
+            value: c.volume,
+            color: c.close >= c.open ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)',
+        }));
+
+        this.klineCandlestickSeries.setData(candleData);
+        this.klineVolumeSeries.setData(volumeData);
+
+        if (data.indicators && data.indicators.ema20 && data.indicators.ema20.length > 0) {
+            if (!this.klineEma20Series) {
+                this.klineEma20Series = this.klineChart.addLineSeries({
+                    color: '#3b82f6',
+                    lineWidth: 1,
+                    title: 'EMA20',
+                });
+            }
+            const ema20Data = data.indicators.ema20.map((value, index) => ({
+                time: Math.floor(data.candles[index].timestamp / 1000),
+                value: value,
+            }));
+            this.klineEma20Series.setData(ema20Data);
+        }
+
+        if (data.indicators && data.indicators.ema50 && data.indicators.ema50.length > 0) {
+            if (!this.klineEma50Series) {
+                this.klineEma50Series = this.klineChart.addLineSeries({
+                    color: '#f59e0b',
+                    lineWidth: 1,
+                    title: 'EMA50',
+                });
+            }
+            const ema50Data = data.indicators.ema50.map((value, index) => ({
+                time: Math.floor(data.candles[index].timestamp / 1000),
+                value: value,
+            }));
+            this.klineEma50Series.setData(ema50Data);
+        }
+
+        this.klineChart.timeScale().fitContent();
     }
 
     // 初始化时间范围选择器（已禁用切换功能）
