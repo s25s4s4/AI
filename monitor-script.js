@@ -614,8 +614,8 @@ class TradingMonitor {
     // 加载资产历史数据
     async loadEquityHistory() {
         try {
-            // 获取全部历史数据
-            const response = await fetch(`/api/history`);
+            // 获取全部历史数据（通过后端 API 域名）
+            const response = await fetch(`${API_BASE}/api/history`, { credentials: 'include' });
             const data = await response.json();
             
             if (data.error) {
