@@ -792,35 +792,41 @@ class TradingMonitor {
             return;
         }
 
-        const interval = this.klineInterval || '5m';
+        const interval = this.klineInterval || '1m';
         const data = await this.loadKlineData(this.klineSymbol, interval);
 
         if (!data || !data.candles || data.candles.length === 0) {
             container.innerHTML = '<div style="color: var(--text-dim); text-align: center; padding: 2rem;">暂无K线数据</div>';
             this.klineChart = null;
+            this.klineIndicatorChart = null;
             return;
         }
 
-        container.innerHTML = '';
+        // 只在首次创建容器
+        let mainChartDiv = document.getElementById('kline-main-chart');
+        let indicatorChartDiv = document.getElementById('kline-indicator-chart');
+        
+        if (!mainChartDiv || !indicatorChartDiv) {
+            container.innerHTML = '';
+            
+            mainChartDiv = document.createElement('div');
+            mainChartDiv.id = 'kline-main-chart';
+            mainChartDiv.style.width = '100%';
+            mainChartDiv.style.height = '380px';
+            container.appendChild(mainChartDiv);
 
-        // 创建主图容器和副图容器
-        const mainChartDiv = document.createElement('div');
-        mainChartDiv.id = 'kline-main-chart';
-        mainChartDiv.style.width = '100%';
-        mainChartDiv.style.height = '320px';
-        container.appendChild(mainChartDiv);
-
-        const indicatorChartDiv = document.createElement('div');
-        indicatorChartDiv.id = 'kline-indicator-chart';
-        indicatorChartDiv.style.width = '100%';
-        indicatorChartDiv.style.height = '120px';
-        indicatorChartDiv.style.marginTop = '10px';
-        container.appendChild(indicatorChartDiv);
+            indicatorChartDiv = document.createElement('div');
+            indicatorChartDiv.id = 'kline-indicator-chart';
+            indicatorChartDiv.style.width = '100%';
+            indicatorChartDiv.style.height = '140px';
+            indicatorChartDiv.style.marginTop = '5px';
+            container.appendChild(indicatorChartDiv);
+        }
 
         if (!this.klineChart) {
             this.klineChart = LightweightCharts.createChart(mainChartDiv, {
                 width: mainChartDiv.clientWidth,
-                height: 320,
+                height: 380,
                 layout: {
                     background: { color: '#0a0e1a' },
                     textColor: '#9ca3af',
@@ -866,7 +872,7 @@ class TradingMonitor {
             // 创建指标副图
             this.klineIndicatorChart = LightweightCharts.createChart(indicatorChartDiv, {
                 width: indicatorChartDiv.clientWidth,
-                height: 120,
+                height: 140,
                 layout: {
                     background: { color: '#0a0e1a' },
                     textColor: '#9ca3af',
@@ -902,17 +908,18 @@ class TradingMonitor {
             });
         }
 
+        // 转换时间戳为秒级（Lightweight Charts需要）
         const candleData = data.candles.map(c => ({
             time: Math.floor(c.timestamp / 1000),
-            open: c.open,
-            high: c.high,
-            low: c.low,
-            close: c.close,
+            open: parseFloat(c.open),
+            high: parseFloat(c.high),
+            low: parseFloat(c.low),
+            close: parseFloat(c.close),
         }));
 
         const volumeData = data.candles.map(c => ({
             time: Math.floor(c.timestamp / 1000),
-            value: c.volume,
+            value: parseFloat(c.volume),
             color: c.close >= c.open ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)',
         }));
 
@@ -923,14 +930,20 @@ class TradingMonitor {
             if (!this.klineEma20Series) {
                 this.klineEma20Series = this.klineChart.addLineSeries({
                     color: '#3b82f6',
-                    lineWidth: 1,
+                    lineWidth: 2,
                     title: 'EMA20',
                 });
             }
-            const ema20Data = data.indicators.ema20.map((value, index) => ({
-                time: Math.floor(data.candles[index].timestamp / 1000),
-                value: value,
-            }));
+            // 确保数据长度一致
+            const ema20Data = data.indicators.ema20
+                .map((value, index) => {
+                    if (!data.candles[index] || !value) return null;
+                    return {
+                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        value: parseFloat(value),
+                    };
+                })
+                .filter(d => d !== null);
             this.klineEma20Series.setData(ema20Data);
         }
 
@@ -938,14 +951,20 @@ class TradingMonitor {
             if (!this.klineEma50Series) {
                 this.klineEma50Series = this.klineChart.addLineSeries({
                     color: '#f59e0b',
-                    lineWidth: 1,
+                    lineWidth: 2,
                     title: 'EMA50',
                 });
             }
-            const ema50Data = data.indicators.ema50.map((value, index) => ({
-                time: Math.floor(data.candles[index].timestamp / 1000),
-                value: value,
-            }));
+            // 确保数据长度一致
+            const ema50Data = data.indicators.ema50
+                .map((value, index) => {
+                    if (!data.candles[index] || !value) return null;
+                    return {
+                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        value: parseFloat(value),
+                    };
+                })
+                .filter(d => d !== null);
             this.klineEma50Series.setData(ema50Data);
         }
 
@@ -977,28 +996,31 @@ class TradingMonitor {
                 lineWidth: 2,
                 title: 'RSI(7)',
             });
-            const rsiData = data.indicators.rsi7.map((value, index) => ({
-                time: Math.floor(data.candles[index].timestamp / 1000),
-                value: value,
-            }));
+            const rsiData = data.indicators.rsi7
+                .map((value, index) => {
+                    if (!data.candles[index] || value == null) return null;
+                    return {
+                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        value: parseFloat(value),
+                    };
+                })
+                .filter(d => d !== null);
             this.klineIndicatorSeries.setData(rsiData);
-            
-            // 添加超买超卖线
-            this.klineIndicatorChart.applyOptions({
-                rightPriceScale: {
-                    scaleMargins: { top: 0.1, bottom: 0.1 },
-                },
-            });
         } else if (indicator === 'rsi14' && data.indicators?.rsi14) {
             this.klineIndicatorSeries = this.klineIndicatorChart.addLineSeries({
                 color: '#ef4444',
                 lineWidth: 2,
                 title: 'RSI(14)',
             });
-            const rsiData = data.indicators.rsi14.map((value, index) => ({
-                time: Math.floor(data.candles[index].timestamp / 1000),
-                value: value,
-            }));
+            const rsiData = data.indicators.rsi14
+                .map((value, index) => {
+                    if (!data.candles[index] || value == null) return null;
+                    return {
+                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        value: parseFloat(value),
+                    };
+                })
+                .filter(d => d !== null);
             this.klineIndicatorSeries.setData(rsiData);
         } else if (indicator === 'macd' && data.indicators?.macd) {
             // MACD柱状图
@@ -1006,11 +1028,16 @@ class TradingMonitor {
                 color: '#3b82f6',
                 title: 'MACD',
             });
-            const macdData = data.indicators.macd.map((value, index) => ({
-                time: Math.floor(data.candles[index].timestamp / 1000),
-                value: value,
-                color: value >= 0 ? '#ef4444' : '#22c55e',
-            }));
+            const macdData = data.indicators.macd
+                .map((value, index) => {
+                    if (!data.candles[index] || value == null) return null;
+                    return {
+                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        value: parseFloat(value),
+                        color: value >= 0 ? '#ef4444' : '#22c55e',
+                    };
+                })
+                .filter(d => d !== null);
             this.klineIndicatorSeries.setData(macdData);
         } else if (indicator === 'atr' && data.indicators?.atr) {
             this.klineIndicatorSeries = this.klineIndicatorChart.addLineSeries({
@@ -1018,10 +1045,15 @@ class TradingMonitor {
                 lineWidth: 2,
                 title: 'ATR',
             });
-            const atrData = data.indicators.atr.map((value, index) => ({
-                time: Math.floor(data.candles[index].timestamp / 1000),
-                value: value,
-            }));
+            const atrData = data.indicators.atr
+                .map((value, index) => {
+                    if (!data.candles[index] || value == null) return null;
+                    return {
+                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        value: parseFloat(value),
+                    };
+                })
+                .filter(d => d !== null);
             this.klineIndicatorSeries.setData(atrData);
         }
 
