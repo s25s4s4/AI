@@ -908,9 +908,10 @@ class TradingMonitor {
             });
         }
 
-        // 转换时间戳为秒级（Lightweight Charts需要）
+        // 转换时间戳为秒级，并转换为本地时区（东八区+8小时）
+        const tzOffset = 8 * 3600; // UTC+8
         const candleData = data.candles.map(c => ({
-            time: Math.floor(c.timestamp / 1000),
+            time: Math.floor(c.timestamp / 1000) + tzOffset,
             open: parseFloat(c.open),
             high: parseFloat(c.high),
             low: parseFloat(c.low),
@@ -918,7 +919,7 @@ class TradingMonitor {
         }));
 
         const volumeData = data.candles.map(c => ({
-            time: Math.floor(c.timestamp / 1000),
+            time: Math.floor(c.timestamp / 1000) + tzOffset,
             value: parseFloat(c.volume),
             color: c.close >= c.open ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)',
         }));
@@ -939,7 +940,7 @@ class TradingMonitor {
                 .map((value, index) => {
                     if (!data.candles[index] || !value) return null;
                     return {
-                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        time: Math.floor(data.candles[index].timestamp / 1000) + tzOffset,
                         value: parseFloat(value),
                     };
                 })
@@ -960,7 +961,7 @@ class TradingMonitor {
                 .map((value, index) => {
                     if (!data.candles[index] || !value) return null;
                     return {
-                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        time: Math.floor(data.candles[index].timestamp / 1000) + tzOffset,
                         value: parseFloat(value),
                     };
                 })
@@ -989,6 +990,9 @@ class TradingMonitor {
             this.klineIndicatorSeries = null;
         }
 
+        // 时区偏移（东八区）
+        const tzOffset = 8 * 3600;
+        
         // 根据选择的指标绘制
         if (indicator === 'rsi7' && data.indicators?.rsi7) {
             this.klineIndicatorSeries = this.klineIndicatorChart.addLineSeries({
@@ -1000,7 +1004,7 @@ class TradingMonitor {
                 .map((value, index) => {
                     if (!data.candles[index] || value == null) return null;
                     return {
-                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        time: Math.floor(data.candles[index].timestamp / 1000) + tzOffset,
                         value: parseFloat(value),
                     };
                 })
@@ -1016,7 +1020,7 @@ class TradingMonitor {
                 .map((value, index) => {
                     if (!data.candles[index] || value == null) return null;
                     return {
-                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        time: Math.floor(data.candles[index].timestamp / 1000) + tzOffset,
                         value: parseFloat(value),
                     };
                 })
@@ -1032,7 +1036,7 @@ class TradingMonitor {
                 .map((value, index) => {
                     if (!data.candles[index] || value == null) return null;
                     return {
-                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        time: Math.floor(data.candles[index].timestamp / 1000) + tzOffset,
                         value: parseFloat(value),
                         color: value >= 0 ? '#ef4444' : '#22c55e',
                     };
@@ -1049,7 +1053,7 @@ class TradingMonitor {
                 .map((value, index) => {
                     if (!data.candles[index] || value == null) return null;
                     return {
-                        time: Math.floor(data.candles[index].timestamp / 1000),
+                        time: Math.floor(data.candles[index].timestamp / 1000) + tzOffset,
                         value: parseFloat(value),
                     };
                 })

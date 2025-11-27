@@ -1,4 +1,4 @@
-/* Global Styles */
+ï»¿/* Global Styles */
 * {
     margin: 0;
     padding: 0;
@@ -528,7 +528,7 @@ body {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     padding: 1.5rem;
-    min-height: 260px;
+    min-min-height: 540px;
     display: flex;
     flex-direction: column;
     max-width: 100%;
@@ -870,7 +870,7 @@ body {
 
 .positions-kline-chart-container {
     margin-top: 0.5rem;
-    height: 260px;
+    min-height: 540px;
     background-color: var(--bg-tertiary);
     border: 1px solid var(--border-color);
     padding: 0.75rem;
@@ -2338,7 +2338,7 @@ body {
 }
 
 
-/* KÏßÖ¸±êÇÐ»»°´Å¥ÑùÊ½ */
+/* Kï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½Å¥ï¿½ï¿½Ê½ */
 .positions-kline-indicators {
     display: flex;
     align-items: center;
