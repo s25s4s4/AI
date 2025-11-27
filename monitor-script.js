@@ -23,7 +23,7 @@
 // 远程访问：设为你的 Cloudflare Tunnel 地址，例如 'https://xxxxx.trycloudflare.com'
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? '' // 本地访问，使用相对路径
-    : 'https://spice-anything-images-peripherals.trycloudflare.com'; // 远程访问，改成你的 Cloudflare Tunnel 地址
+    : 'https://api.aizidonghua.top'; // 远程访问，使用固定域名
 
 class TradingMonitor {
     constructor() {
